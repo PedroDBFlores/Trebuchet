@@ -3,9 +3,9 @@ use std::ops::{Deref, DerefMut};
 use crate::tester::result::LoadTestResult;
 
 pub(super) struct HttpResult {
-    result: LoadTestResult,
-    status: u16,
-    body: Box<str>,
+    pub(crate) result: LoadTestResult,
+    pub(crate) status: u16,
+    pub(crate) body: String,
 }
 
 impl Deref for HttpResult {

@@ -1,6 +1,5 @@
-use std::{error::Error, time::Duration};
+use std::time::Duration;
 
 pub(crate) struct LoadTestResult {
-    latency: Duration,
-    error: Box<dyn Error>,
+    pub(crate) latency: Duration,
 }
