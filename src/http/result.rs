@@ -1,10 +1,11 @@
+use super::HttpStatus;
 use std::ops::{Deref, DerefMut};
 
-use crate::tester::result::LoadTestResult;
+use crate::tester::LoadTestResult;
 
-pub(super) struct HttpResult {
+pub(crate) struct HttpResult {
     pub(crate) result: LoadTestResult,
-    pub(crate) status: u16,
+    pub(crate) status: HttpStatus,
     pub(crate) body: String,
 }
 

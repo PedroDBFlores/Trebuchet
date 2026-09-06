@@ -1,7 +1,5 @@
-use std::time::Duration;
-
-use ureq::Body;
-
+use super::HttpResult;
+use super::HttpTarget;
 use crate::tester::TestExecutor;
 
 pub(crate) struct HttpExecutor {
@@ -22,11 +20,8 @@ impl Default for HttpExecutor {
     }
 }
 
-impl TestExecutor<super::target::HttpTarget, super::result::HttpResult> for HttpExecutor {
-    fn execute(
-        &self,
-        target: &super::target::HttpTarget,
-    ) -> Result<super::result::HttpResult, Box<dyn std::error::Error>> {
+impl TestExecutor<HttpTarget, HttpResult> for HttpExecutor {
+    fn execute(&self, target: &HttpTarget) -> Result<HttpResult, Box<dyn std::error::Error>> {
         let current_time = std::time::Instant::now();
         let response = self.client.get(&target.url).call();
         let elapsed = current_time.elapsed();
@@ -35,9 +30,9 @@ impl TestExecutor<super::target::HttpTarget, super::result::HttpResult> for Http
                 let status = response.status();
                 let body = response.body_mut();
                 let string_body = body.read_to_string();
-                Ok(super::result::HttpResult {
-                    result: crate::tester::result::LoadTestResult { latency: elapsed },
-                    status: status.into(),
+                Ok(HttpResult {
+                    result: crate::tester::LoadTestResult { latency: elapsed },
+                    status: status.as_u16().into(),
                     body: string_body.unwrap_or_default(),
                 })
             }
@@ -53,7 +48,7 @@ mod tests {
     use httpmock::MockServer;
 
     use crate::{
-        http::{executor::HttpExecutor, target::HttpTarget},
+        http::{HttpStatus, executor::HttpExecutor, target::HttpTarget},
         tester::TestExecutor,
     };
 
@@ -64,23 +59,22 @@ mod tests {
             when.method("GET").path("/");
             then.status(200).body("OK");
         });
-
         let executor = HttpExecutor::default();
         let target = HttpTarget::new(
             "id".to_string(),
             std::time::Duration::new(5, 0),
-            3,
+            1,
             "test".to_string(),
             server.base_url(),
-            "GET".to_string(),
+            crate::http::HttpMethod::GET,
             HashMap::new(),
             None,
-            200,
+            200.into(),
         );
         let result = executor.execute(&target);
         assert!(result.is_ok());
         let value = result.unwrap();
-        assert_eq!(value.status, 200);
+        assert_eq!(value.status, HttpStatus::Success(200));
         assert!(value.latency > std::time::Duration::new(0, 0));
 
         handle.assert();

@@ -1,6 +1,6 @@
 use super::target::LoadTestTarget;
 
-struct LoadTestConfig {
+pub(crate) struct LoadTestConfig {
     id: String,
     targets: Vec<LoadTestTarget>,
 }

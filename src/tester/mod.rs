@@ -1,8 +1,12 @@
 use std::ops::Deref;
 
-pub(crate) mod config;
-pub(crate) mod result;
-pub(crate) mod target;
+mod config;
+mod result;
+mod target;
+
+pub(crate) use config::LoadTestConfig;
+pub(crate) use result::LoadTestResult;
+pub(crate) use target::LoadTestTarget;
 
 pub(crate) trait TestExecutor<
     T: Deref<Target = target::LoadTestTarget>,
