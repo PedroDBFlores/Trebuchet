@@ -3,6 +3,7 @@ use std::ops::{Deref, DerefMut};
 
 use crate::tester::LoadTestResult;
 
+#[derive(Debug)]
 pub(crate) struct HttpResult {
     pub(crate) result: LoadTestResult,
     pub(crate) status: HttpStatus,

@@ -8,6 +8,7 @@ use super::{HttpMethod, HttpStatus};
 
 use crate::tester::LoadTestTarget;
 
+#[derive(Debug, Clone)]
 pub(crate) struct HttpTarget {
     pub(crate) target: LoadTestTarget,
     pub(crate) name: String,

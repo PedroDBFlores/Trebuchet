@@ -14,16 +14,28 @@ impl HttpExecutor {
 
 impl Default for HttpExecutor {
     fn default() -> Self {
+        let config = ureq::Agent::config_builder()
+            .http_status_as_error(false)
+            .build();
         Self {
-            client: ureq::Agent::new_with_defaults(),
+            client: ureq::Agent::new_with_config(config),
         }
     }
 }
 
 impl TestExecutor<HttpTarget, HttpResult> for HttpExecutor {
     fn execute(&self, target: &HttpTarget) -> Result<HttpResult, Box<dyn std::error::Error>> {
+        let mut request = self
+            .client
+            .get(&target.url)
+            .config()
+            .timeout_global(Some(target.timeout))
+            .build();
+        for (key, value) in &target.headers {
+            request = request.header(key, value);
+        }
         let current_time = std::time::Instant::now();
-        let response = self.client.get(&target.url).call();
+        let response = request.call();
         let elapsed = current_time.elapsed();
         match response {
             Ok(mut response) => {
@@ -36,47 +48,14 @@ impl TestExecutor<HttpTarget, HttpResult> for HttpExecutor {
                     body: string_body.unwrap_or_default(),
                 })
             }
+            Err(ureq::Error::Timeout(_)) => Err(Box::new(super::errors::ResponseError::Timeout(
+                target.timeout.as_millis() as u32,
+            ))),
             Err(e) => Err(Box::new(e)),
         }
     }
 }
 
 #[cfg(test)]
-mod tests {
-    use std::collections::HashMap;
-
-    use httpmock::MockServer;
-
-    use crate::{
-        http::{HttpStatus, executor::HttpExecutor, target::HttpTarget},
-        tester::TestExecutor,
-    };
-
-    #[test]
-    fn test_execute() {
-        let server = MockServer::start();
-        let handle = server.mock(|when, then| {
-            when.method("GET").path("/");
-            then.status(200).body("OK");
-        });
-        let executor = HttpExecutor::default();
-        let target = HttpTarget::new(
-            "id".to_string(),
-            std::time::Duration::new(5, 0),
-            1,
-            "test".to_string(),
-            server.base_url(),
-            crate::http::HttpMethod::GET,
-            HashMap::new(),
-            None,
-            200.into(),
-        );
-        let result = executor.execute(&target);
-        assert!(result.is_ok());
-        let value = result.unwrap();
-        assert_eq!(value.status, HttpStatus::Success(200));
-        assert!(value.latency > std::time::Duration::new(0, 0));
-
-        handle.assert();
-    }
-}
+#[path = "executor_test.rs"]
+mod tests;

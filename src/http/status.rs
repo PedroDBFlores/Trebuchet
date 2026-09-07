@@ -1,4 +1,4 @@
-use std::{error::Error, fmt::Display};
+use std::fmt::Display;
 
 #[derive(Debug, Clone, PartialEq)]
 pub(crate) enum HttpStatus {
@@ -43,21 +43,21 @@ mod tests {
 
     #[test]
     fn test_http_status_from_u16() {
+        assert_eq!(HttpStatus::from(101), HttpStatus::Informational(101));
         assert_eq!(HttpStatus::from(200), HttpStatus::Success(200));
         assert_eq!(HttpStatus::from(301), HttpStatus::Redirection(301));
         assert_eq!(HttpStatus::from(404), HttpStatus::ClientError(404));
         assert_eq!(HttpStatus::from(500), HttpStatus::ServerError(500));
-        assert_eq!(HttpStatus::from(101), HttpStatus::Informational(101));
         assert_eq!(HttpStatus::from(600), HttpStatus::Unknown(600));
     }
 
     #[test]
     fn test_http_status_description() {
+        assert_eq!(HttpStatus::from(101).to_string(), "Informational (101)");
         assert_eq!(HttpStatus::from(200).to_string(), "Success (200)");
         assert_eq!(HttpStatus::from(301).to_string(), "Redirect (301)");
         assert_eq!(HttpStatus::from(404).to_string(), "Client Error (404)");
         assert_eq!(HttpStatus::from(500).to_string(), "Server Error (500)");
-        assert_eq!(HttpStatus::from(101).to_string(), "Informational (101)");
         assert_eq!(HttpStatus::from(600).to_string(), "Unknown (600)");
     }
 }

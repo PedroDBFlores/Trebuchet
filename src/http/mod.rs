@@ -1,3 +1,4 @@
+pub(crate) mod errors;
 mod executor;
 mod method;
 mod result;

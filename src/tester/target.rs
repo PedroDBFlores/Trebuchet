@@ -1,5 +1,6 @@
 use std::time::Duration;
 
+#[derive(Debug, Clone)]
 pub(crate) struct LoadTestTarget {
     pub(crate) id: String,
     pub(crate) timeout: Duration,
