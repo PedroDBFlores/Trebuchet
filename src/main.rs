@@ -1,8 +1,12 @@
+use std::fmt::Error;
+use tokio::main;
+
 mod cmd;
 mod http;
 mod tester;
-mod errors;
 
-fn main() {
-    println!("Hello, world!");
+#[main]
+async fn main() -> Result<(), Error> {
+    println!("Hello from Trebuchet!");
+    Ok(())
 }

@@ -13,5 +13,5 @@ pub(crate) trait TestExecutor<
     R: Deref<Target = result::LoadTestResult>,
 >
 {
-    fn execute(&self, target: &T) -> Result<R, Box<dyn std::error::Error>>;
+    async fn execute(&self, target: &T) -> Result<R, Box<dyn std::error::Error>>;
 }
