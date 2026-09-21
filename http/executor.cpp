@@ -24,7 +24,7 @@ void HttpExecutor::free_slist(struct curl_slist* list) {
     }
 }
 
-HttpExecutor::HttpExecutor(std::chrono::milliseconds default_timeout)
+HttpExecutor::HttpExecutor(const std::chrono::milliseconds default_timeout)
     : curl_handle(curl_easy_init()), default_timeout(default_timeout) {
     if (!curl_handle) {
         throw std::runtime_error("Failed to initialize libcurl");
@@ -41,13 +41,12 @@ HttpExecutor::~HttpExecutor() {
     }
 }
 
-HttpResult HttpExecutor::execute(std::shared_ptr<HttpTarget> target) {
-    auto start_time = std::chrono::steady_clock::now();
+HttpResult HttpExecutor::execute(const std::shared_ptr<HttpTarget> target) {
+    const auto start_time = std::chrono::steady_clock::now();
     
     std::string response_body;
     long response_code = 0;
-    CURLcode curl_result;
-    
+
     // Set URL
     curl_easy_setopt(curl_handle, CURLOPT_URL, target->url.c_str());
     
@@ -86,7 +85,7 @@ HttpResult HttpExecutor::execute(std::shared_ptr<HttpTarget> target) {
     
     // Set up response handling
     curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, 
-        [](char* data, size_t size, size_t nmemb, void* userdata) -> size_t {
+        [](const char* data, const size_t size, const size_t nmemb, void* userdata) -> size_t {
             std::string* body = static_cast<std::string*>(userdata);
             body->append(data, size * nmemb);
             return size * nmemb;
@@ -94,16 +93,16 @@ HttpResult HttpExecutor::execute(std::shared_ptr<HttpTarget> target) {
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &response_body);
     
     // Execute the request
-    curl_result = curl_easy_perform(curl_handle);
+    CURLcode curl_result = curl_easy_perform(curl_handle);
     
     // Get response code
     curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &response_code);
     
     // Cleanup headers
     free_slist(headers_list);
-    
-    auto end_time = std::chrono::steady_clock::now();
-    auto latency = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
+
+    const auto end_time = std::chrono::steady_clock::now();
+    const auto latency = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
     
     // Check for errors
     if (curl_result != CURLE_OK) {

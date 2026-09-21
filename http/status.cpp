@@ -1,7 +1,7 @@
 #include "status.h"
 #include <string>
 
-HttpStatus::HttpStatus(uint16_t code) : code(code) {
+HttpStatus::HttpStatus(const uint16_t code) : code(code) {
     if (code >= 100 && code <= 199) {
         type = HttpStatusType::Informational;
     } else if (code >= 200 && code <= 299) {
