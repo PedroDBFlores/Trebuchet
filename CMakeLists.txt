@@ -6,11 +6,6 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-# For each target, explicitly set the standard
-target_compile_options(Trebuchet PRIVATE -std=c++20)
-target_compile_options(http PRIVATE -std=c++20)
-target_compile_options(tester PRIVATE -std=c++20)
-
 # Find required packages
 find_package(CURL REQUIRED)
 

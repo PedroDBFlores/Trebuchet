@@ -14,12 +14,6 @@ class TrebuchetConan(ConanFile):
     def layout(self):
         cmake_layout(self)
 
-    def generate(self):
-        deps = CMakeDeps(self)
-        deps.generate()
-        tc = CMakeToolchain(self)
-        tc.generate()
-
     def build(self):
         cmake = CMake(self)
         cmake.configure()
