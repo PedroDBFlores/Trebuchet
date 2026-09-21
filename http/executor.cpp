@@ -6,7 +6,6 @@
 #include "errors.h"
 #include <curl/curl.h>
 #include <stdexcept>
-#include <sstream>
 
 // Helper to convert headers map to curl slist
 struct curl_slist* HttpExecutor::headers_to_slist(const std::unordered_map<std::string, std::string>& headers) {
@@ -43,17 +42,17 @@ HttpExecutor::~HttpExecutor() {
 
 HttpResult HttpExecutor::execute(const std::shared_ptr<HttpTarget> target) {
     const auto start_time = std::chrono::steady_clock::now();
-    
+
     std::string response_body;
     long response_code = 0;
 
     // Set URL
     curl_easy_setopt(curl_handle, CURLOPT_URL, target->url.c_str());
-    
+
     // Set timeout
-    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS, 
+    curl_easy_setopt(curl_handle, CURLOPT_TIMEOUT_MS,
                      static_cast<long>(target->timeout.count()));
-    
+
     // Set HTTP method
     switch(target->method) {
         case HttpMethod::GET:
@@ -76,34 +75,34 @@ HttpResult HttpExecutor::execute(const std::shared_ptr<HttpTarget> target) {
             curl_easy_setopt(curl_handle, CURLOPT_CUSTOMREQUEST, "DELETE");
             break;
     }
-    
+
     // Set headers
     struct curl_slist* headers_list = headers_to_slist(target->headers);
     if (headers_list) {
         curl_easy_setopt(curl_handle, CURLOPT_HTTPHEADER, headers_list);
     }
-    
+
     // Set up response handling
-    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, 
+    curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION,
         [](const char* data, const size_t size, const size_t nmemb, void* userdata) -> size_t {
             std::string* body = static_cast<std::string*>(userdata);
             body->append(data, size * nmemb);
             return size * nmemb;
         });
     curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, &response_body);
-    
+
     // Execute the request
     CURLcode curl_result = curl_easy_perform(curl_handle);
-    
+
     // Get response code
     curl_easy_getinfo(curl_handle, CURLINFO_RESPONSE_CODE, &response_code);
-    
+
     // Cleanup headers
     free_slist(headers_list);
 
     const auto end_time = std::chrono::steady_clock::now();
     const auto latency = std::chrono::duration_cast<std::chrono::milliseconds>(end_time - start_time);
-    
+
     // Check for errors
     if (curl_result != CURLE_OK) {
         if (curl_result == CURLE_OPERATION_TIMEDOUT) {
@@ -111,9 +110,9 @@ HttpResult HttpExecutor::execute(const std::shared_ptr<HttpTarget> target) {
         }
         throw http::ConnectionError(curl_easy_strerror(curl_result));
     }
-    
+
     // Create status and result
     HttpStatus status(static_cast<uint16_t>(response_code));
-    
+
     return HttpResult(latency, status, response_body);
 }
