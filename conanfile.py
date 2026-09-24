@@ -18,3 +18,6 @@ class TrebuchetConan(ConanFile):
         cmake = CMake(self)
         cmake.configure()
         cmake.build()
+
+    def requirements(self):
+        self.requires("catch2/[>=3.16.0 <4]")
