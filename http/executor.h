@@ -16,7 +16,7 @@ private:
 
     // Helper to convert headers map to curl slist
     static struct curl_slist* headers_to_slist(const std::unordered_map<std::string, std::string>& headers);
-    
+
     // Helper to free curl slist
     static void free_slist(struct curl_slist* list);
 
@@ -26,7 +26,7 @@ public:
 
     // Execute an HTTP request against the target
     HttpResult execute(std::shared_ptr<HttpTarget> target) override;
-    
+
     // Delete copy constructor and assignment operator (CURL* is not copyable)
     HttpExecutor(const HttpExecutor&) = delete;
     HttpExecutor& operator=(const HttpExecutor&) = delete;

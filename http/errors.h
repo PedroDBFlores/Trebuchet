@@ -1,6 +1,4 @@
 #pragma once
-#include <string>
-#include <stdexcept>
 #include "../errors/response.h"
 
 // HTTP-specific error types
